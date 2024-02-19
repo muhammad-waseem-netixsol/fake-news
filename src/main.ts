@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // Define CORS options
   const corsOptions = {
-    origin: ['https://finalhackathonfrontend.vercel.app'], // or specify your frontend URL(s) here
+    origin: ['http://localhost:3000'], // or specify your frontend URL(s) here
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // or specify the methods you need
     allowedHeaders: ['Content-Type', 'Authorization'], // or specify the headers you need
   };
