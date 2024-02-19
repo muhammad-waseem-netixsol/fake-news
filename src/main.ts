@@ -4,7 +4,14 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({origin: "http://localhost:3000"})
+  // Define CORS options
+  const corsOptions = {
+    origin: ['https://finalhackathonfrontend.vercel.app'], // or specify your frontend URL(s) here
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // or specify the methods you need
+    allowedHeaders: ['Content-Type', 'Authorization'], // or specify the headers you need
+  };
+  // Enable CORS with options
+  app.enableCors(corsOptions);
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3001);
 }
