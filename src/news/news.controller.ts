@@ -5,6 +5,11 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('news')
 export class NewsController {
   constructor(private newsService: NewsService) {}
+  @Get("/author")
+   @UseGuards(AuthGuard())
+   async conversion (){
+    return await this.newsService.getAuthorAnalytics()
+   }
   // api for dashboard analytics
   @Get("/analytics")
   @UseGuards(AuthGuard())
@@ -55,10 +60,6 @@ export class NewsController {
  
   }
    // 
-   @Put("/update")
-   @UseGuards(AuthGuard())
-   async conversion (){
-    return await this.newsService.updateTable1WithReferences()
-   }
+   
   
 }

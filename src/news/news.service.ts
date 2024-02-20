@@ -53,7 +53,6 @@ export class NewsService {
   
   async handleLike(id: string, req: any) {
      const newsId = new ObjectId(id);
-
    return await this.newsModel.findByIdAndUpdate({_id:newsId}, {comments: ["updated"]});
 
 
@@ -168,7 +167,7 @@ async updateTable1WithReferences(): Promise<void> {
     table1Docs.forEach(async (table1Doc: any) => {
       console.log({test2: table1Doc._doc._id}, 'anas')
 
-      const test = await this.newsModel.findById(table1Doc._doc._id)
+      const test =  await this.newsModel.findById(table1Doc._doc._id)
       console.log({test, test2: table1Doc._doc._id}, 'anas')
 
 
@@ -196,5 +195,100 @@ async updateTable1WithReferences(): Promise<void> {
     throw new Error('An error occurred while updating Table 1 with modified fields.');
   }
 }
+
+
+// authors
+
+async getAuthorAnalytics() {
+  const startDate = new Date('2016-10-26');
+  const endDate = new Date('2016-11-26');
+  const intervalDays = 4;
+  const intervals = [];
+  for (
+    let currentDate = new Date(startDate);
+    currentDate <= endDate;
+    currentDate.setDate(currentDate.getDate() + intervalDays)
+  ) {
+    intervals.push(new Date(currentDate));
+  }
+  const pipelines = intervals.map((intervalStartDate, index) => {
+    const intervalEndDate = new Date(intervalStartDate);
+    intervalEndDate.setDate(intervalEndDate.getDate() + intervalDays);
+    return {
+      $match: {
+        author: {
+          $in: [
+            'Whitney Webb',
+            'Brianna Acuesta',
+            'True Activist',
+            'Amanda Froelich',
+            'Anonymous Activist',
+          ],
+        },
+        published: {
+          $gte: new Date(intervalStartDate.toISOString()),
+          $lt: new Date(intervalEndDate.toISOString()),
+        },
+      },
+      
+      
+    };
+  });
+  const results = await Promise.all(
+    pipelines.map(async (pipeline, index) => {
+      console.log(`Processing pipeline ${index + 1}:`, JSON.stringify(pipeline));
+  
+      const result = await this.newsModel.aggregate([
+        pipeline,
+        { $group: { _id: '$author', count: { $sum: 1 } } },
+      ]);
+  
+      console.log(`Result for pipeline ${index + 1}:`, JSON.stringify(result));
+  
+      return result;
+    }),
+  );
+  
+  const dates = intervals.map((interval) => interval.toISOString());
+  const WhitneyCounts = results.map(
+    (result) =>
+      result.find((item) => item._id === 'Whitney Webb')?.count || 0,
+  );
+  const BriannaCounts = results.map(
+    (result) =>
+      result.find((item) => item._id === 'Brianna Acuesta')?.count || 0,
+  );
+  const TrueCounts = results.map(
+    (result) =>
+      result.find((item) => item._id === 'True Activist')?.count || 0,
+  );
+  const AmandaCounts = results.map(
+    (result) =>
+      result.find((item) => item._id === 'Amanda Froelich')?.count || 0,
+  );
+  const AnonymousCounts = results.map(
+    (result) =>
+      result.find((item) => item._id === 'Anonymous Activist')?.count || 0,
+  );
+  return {
+    dates,
+    WhitneyCounts: WhitneyCounts.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue;
+    }, 0),
+    AnonymousCounts: AnonymousCounts.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue;
+    }, 0),
+    AmandaCounts: WhitneyCounts.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue;
+    }, 0),
+    TrueCounts: TrueCounts.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue;
+    }, 0),
+    BriannaCounts: BriannaCounts.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue;
+    }, 0),
+  };
+}
+
 
 }
